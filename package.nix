@@ -3,6 +3,7 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
+  versionCheckHook,
 }:
 let
   inherit (stdenv.hostPlatform) system;
@@ -37,6 +38,10 @@ stdenv.mkDerivation {
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     stdenv.cc.cc.lib
   ];
+
+  # Ensure parity between Nix package version and binary version.
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   installPhase = ''
     runHook preInstall
