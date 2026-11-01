@@ -1,4 +1,4 @@
-# microsandbox-nix
+# microsandbox-bin-nix
 
 Nix packaging for [microsandbox](https://microsandbox.dev)
 ([repo](https://github.com/superradcompany/microsandbox)).
@@ -24,16 +24,16 @@ users.users.YOUR_USER.extraGroups = [ "kvm" ];
 
 ```bash
 # Run msb once (flakes).
-$ nix run github:xuoe/microsandbox-nix -- --version
+$ nix run github:xuoe/microsandbox-bin-nix -- --version
 msb 0.7.12
 
 # Open a shell with msb on PATH (flakes).
-$ nix shell github:xuoe/microsandbox-nix
+$ nix shell github:xuoe/microsandbox-bin-nix
 $ msb --version
 msb 0.7.12
 
 # Build msb without flakes.
-$ nix-build https://github.com/xuoe/microsandbox-nix/archive/master.tar.gz
+$ nix-build https://github.com/xuoe/microsandbox-bin-nix/archive/master.tar.gz
 $ ./result/bin/msb --version
 msb 0.7.12
 ```
@@ -46,7 +46,7 @@ msb 0.7.12
 # flake.nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  inputs.microsandbox.url = "github:xuoe/microsandbox-nix";
+  inputs.microsandbox.url = "github:xuoe/microsandbox-bin-nix";
 
   outputs = { nixpkgs, microsandbox, ... }:
     let
@@ -77,7 +77,7 @@ msb 0.7.12
 ```nix
 let
   src = builtins.fetchTarball {
-    url = "https://github.com/xuoe/microsandbox-nix/archive/REVISION.tar.gz";
+    url = "https://github.com/xuoe/microsandbox-bin-nix/archive/REVISION.tar.gz";
     sha256 = "..."; # nix-prefetch-url --unpack <url>
   };
 in
