@@ -76,7 +76,7 @@ jobs:
   validate:
     needs: [check, update]
     if: needs.check.outputs.update == 'true'
-    uses: ./.github/workflows/check.yml
+    uses: ./.github/workflows/ci.yml
     with:
       apply-release-data: true
 
@@ -111,5 +111,4 @@ jobs:
           git add version checksums.json README.md
           git commit -m "update: bump microsandbox to ${VERSION}"
           git tag -a "v${VERSION}" -m "microsandbox ${VERSION}"
-          git push origin HEAD
-          git push origin "v${VERSION}"
+          git push --atomic origin HEAD "v${VERSION}"
