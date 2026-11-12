@@ -3,6 +3,7 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
+  installShellFiles,
   versionCheckHook,
 }:
 let
@@ -30,14 +31,13 @@ stdenv.mkDerivation {
   # The vendor binaries are already stripped.
   dontStrip = true;
 
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    autoPatchelfHook
-  ];
+  nativeBuildInputs = [
+    installShellFiles
+  ]
+  ++ lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
 
   # libstdc++ and libgcc_s are needed on Linux.
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    stdenv.cc.cc.lib
-  ];
+  buildInputs = lib.optional stdenv.hostPlatform.isLinux stdenv.cc.cc.lib;
 
   # Ensure parity between Nix package version and binary version.
   doInstallCheck = true;
@@ -48,6 +48,14 @@ stdenv.mkDerivation {
     install -Dm755 msb $out/bin/msb
     install -Dm755 -t $out/lib libkrunfw.*
     runHook postInstall
+  '';
+
+  postInstall = ''
+    ${lib.optionalString stdenv.hostPlatform.isLinux "autoPatchelf $out/bin"}
+    installShellCompletion --cmd msb \
+      --bash <($out/bin/msb completion bash) \
+      --fish <($out/bin/msb completion fish) \
+      --zsh <($out/bin/msb completion zsh)
   '';
 
   meta = {
