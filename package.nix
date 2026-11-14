@@ -7,22 +7,21 @@
   versionCheckHook,
 }:
 let
-  inherit (stdenv.hostPlatform) system;
-  version = lib.trim (builtins.readFile ./version);
-  checksums = builtins.fromJSON (builtins.readFile ./checksums.json);
-  supportedSystem = checksums ? ${system};
-  systems = builtins.attrNames checksums;
-  arch = lib.head (lib.splitString "-" system);
-  os = lib.last (lib.splitString "-" system);
+  inherit (stdenv) hostPlatform;
+  inherit (hostPlatform) system;
+  release = builtins.fromJSON (builtins.readFile ./release.json);
+  inherit (release) version hashes;
+  arch = hostPlatform.parsed.cpu.name;
+  os = hostPlatform.parsed.kernel.name;
 in
-assert supportedSystem || throw "microsandbox ${version} has no release asset for ${system}";
+assert hashes ? ${system} || throw "microsandbox ${version} has no release asset for ${system}";
 stdenv.mkDerivation {
   pname = "microsandbox";
   inherit version;
 
   src = fetchurl {
     url = "https://github.com/superradcompany/microsandbox/releases/download/v${version}/microsandbox-${os}-${arch}.tar.gz";
-    sha256 = checksums.${system};
+    sha256 = hashes.${system};
   };
 
   # The bundle has no top-level directory.
@@ -34,10 +33,10 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     installShellFiles
   ]
-  ++ lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
+  ++ lib.optional hostPlatform.isLinux autoPatchelfHook;
 
   # libstdc++ and libgcc_s are needed on Linux.
-  buildInputs = lib.optional stdenv.hostPlatform.isLinux stdenv.cc.cc.lib;
+  buildInputs = lib.optional hostPlatform.isLinux stdenv.cc.cc.lib;
 
   # Ensure parity between Nix package version and binary version.
   doInstallCheck = true;
@@ -47,19 +46,17 @@ stdenv.mkDerivation {
     runHook preInstall
     install -Dm755 msb $out/bin/msb
     install -Dm755 -t $out/lib libkrunfw.*
-    runHook postInstall
-  '';
 
-  postInstall = ''
-    ${lib.optionalString stdenv.hostPlatform.isLinux "autoPatchelf $out/bin"}
+    ${lib.optionalString hostPlatform.isLinux "autoPatchelf $out/bin"}
     installShellCompletion --cmd msb \
       --bash <($out/bin/msb completion bash) \
       --fish <($out/bin/msb completion fish) \
       --zsh <($out/bin/msb completion zsh)
+    runHook postInstall
   '';
 
   meta = {
-    platforms = systems;
+    platforms = builtins.attrNames hashes;
     description = "Easy, fast, programmable and local-first microVM runtime";
     homepage = "https://microsandbox.dev";
     license = with lib.licenses; [

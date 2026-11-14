@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Refresh version and checksums.json from the microsandbox release checksums.
+# Refresh release.json from the microsandbox release checksums.
 #
 # Usage:
 #   .github/scripts/update-version            # latest GitHub release
 #   .github/scripts/update-version 0.7.9      # a specific version
 #
-# Requires: curl, jq, perl.
+# Requires: curl, jq.
 set -euo pipefail
 
 cd "$(dirname "$0")/../.."
@@ -65,31 +65,23 @@ emit() {
     printf '%s %s\n' "$system" "$hash"
 }
 
-write_version() {
-    printf '%s\n' "$version" > version
-    info "wrote version file"
-}
+entries=$(
+    emit x86_64-linux microsandbox-linux-x86_64.tar.gz
+    emit aarch64-linux microsandbox-linux-aarch64.tar.gz
+    emit aarch64-darwin microsandbox-darwin-aarch64.tar.gz
+)
 
-write_checksums() {
-    local entries
-    entries=$(
-        emit x86_64-linux microsandbox-linux-x86_64.tar.gz
-        emit aarch64-linux microsandbox-linux-aarch64.tar.gz
-        emit aarch64-darwin microsandbox-darwin-aarch64.tar.gz
-    )
-    printf '%s\n' "$entries" | jq -Rn -S '
+tmp=$(mktemp ./release.json.XXXXXX)
+trap 'rm -f "$tmp"' EXIT
+
+printf '%s\n' "$entries" | jq -Rn --arg version "$version" '
+  {
+    version: $version,
+    hashes: (
       reduce (inputs | split(" ")) as $p
         ({}; .[$p[0]] = $p[1])
-    ' > checksums.json
-    info "wrote checksums.json"
-}
-
-update_readme() {
-    # perl rather than sed: GNU and BSD sed differ on -i and do not support \d.
-    perl -pi -e "s/^msb \d+\.\d+\.\d+\S*/msb ${version}/" README.md
-    info "updated README.md version"
-}
-
-write_checksums
-update_readme
-write_version
+    )
+  }
+' > "$tmp"
+mv "$tmp" release.json
+info "wrote release.json"

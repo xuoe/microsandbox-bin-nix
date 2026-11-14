@@ -18,6 +18,20 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+
+      - name: Check formatting, scripts, and workflows
+        run: |
+          nix build -L \
+            .#checks.x86_64-linux.formatting \
+            .#checks.x86_64-linux.shellcheck \
+            .#checks.x86_64-linux.actionlint
+
   # Builds the package on every supported system. The package's versionCheckHook runs
   # `msb --version` and fails the build unless it reports the packaged version.
   build:

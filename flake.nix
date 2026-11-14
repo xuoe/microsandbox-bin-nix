@@ -6,8 +6,8 @@
     { self, nixpkgs }:
     let
       inherit (nixpkgs) lib;
-      checksums = builtins.fromJSON (builtins.readFile ./checksums.json);
-      systems = builtins.attrNames checksums;
+      release = builtins.fromJSON (builtins.readFile ./release.json);
+      systems = builtins.attrNames release.hashes;
       eachSystem = lib.genAttrs systems;
       pkgsFor = system: nixpkgs.legacyPackages.${system};
       overlay = import ./overlay.nix;
