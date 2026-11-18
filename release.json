@@ -1,8 +1,8 @@
 {
-  "version": "0.7.15",
+  "version": "0.7.16",
   "hashes": {
-    "aarch64-darwin": "99b1b0e1d5a30a30e12b4371a339e1683e57f7d12a57be32e63198c8809e1f3d",
-    "aarch64-linux": "1ace5e63bb5793034f0e8afe7d73c6af3e4a2b05cb5b9287cb2da42520a293d5",
-    "x86_64-linux": "37ffc7bf7b2b977ab004f620f47ae4466f021a9b880c94f46f697c56cf6932b7"
+    "x86_64-linux": "1f09ec7057bfcccb70e1713eb61061f15fa759b45e147759eb0b30aa7f5cb3bd",
+    "aarch64-linux": "47e2e3238f31d914eba2a7e7ce328848da4673a1457ef2222f71589fe1da6f83",
+    "aarch64-darwin": "b9341df7cc9a197fb1788c5b3dd7b32cf7036615f7f1a0f7d31685fd9e385ad1"
   }
 }
